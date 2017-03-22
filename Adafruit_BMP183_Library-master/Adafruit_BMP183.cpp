@@ -1,16 +1,16 @@
-/*************************************************** 
+/***************************************************
   This is a library for the Adafruit BMP183 Barometric Pressure + Temp sensor
 
-  Designed specifically to work with the Adafruit BMP183 Breakout 
+  Designed specifically to work with the Adafruit BMP183 Breakout
   ----> http://www.adafruit.com/products/1900
 
-  These sensors use SPI to communicate, 4 pins are required to  
+  These sensors use SPI to communicate, 4 pins are required to
   interface
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
+  Adafruit invests time and resources providing this open source code,
+  please support Adafruit and open-source hardware by purchasing
   products from Adafruit!
 
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
+  Written by Limor Fried/Ladyada for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ****************************************************/
 
@@ -22,16 +22,16 @@
     #define _delay_ms(t) delay(t)
 #endif
 #include <SPI.h>
-
+#define _delay_ms(t) delay(t)
 
 Adafruit_BMP183::Adafruit_BMP183(int8_t SPICS ) {
   _cs = SPICS;
-  _clk = _miso = _mosi = -1; 
+  _clk = _miso = _mosi = -1;
 }
 
-Adafruit_BMP183::Adafruit_BMP183(int8_t SPICLK, 
-				 int8_t SPIMISO, 
-				 int8_t SPIMOSI, 
+Adafruit_BMP183::Adafruit_BMP183(int8_t SPICLK,
+				 int8_t SPIMISO,
+				 int8_t SPIMOSI,
 				 int8_t SPICS) {
   _cs = SPICS;
   _clk = SPICLK;
@@ -43,7 +43,8 @@ Adafruit_BMP183::Adafruit_BMP183(int8_t SPICLK,
 boolean Adafruit_BMP183::begin(bmp183_mode_t mode) {
   if (_clk == -1) {
     SPI.begin();
-    SPI.setDataMode(SPI_MODE0);
+    //SPI.setDataMode(SPI_MODE0);
+    SPI.beginTransaction(SPISettings(7000000, MSBFIRST, SPI_MODE0));
 #ifdef __AVR__
     SPI.setClockDivider(SPI_CLOCK_DIV16);
 #endif
@@ -118,13 +119,13 @@ uint32_t Adafruit_BMP183::readRawPressure(void) {
 
   write8(BMP183_REGISTER_CONTROL, BMP183_REGISTER_READPRESSURECMD + (oversampling << 6));
 
-  if (oversampling == BMP183_MODE_ULTRALOWPOWER) 
+  if (oversampling == BMP183_MODE_ULTRALOWPOWER)
     _delay_ms(5);
-  else if (oversampling == BMP183_MODE_STANDARD) 
+  else if (oversampling == BMP183_MODE_STANDARD)
     _delay_ms(8);
-  else if (oversampling == BMP183_MODE_HIGHRES) 
+  else if (oversampling == BMP183_MODE_HIGHRES)
     _delay_ms(14);
-  else 
+  else
     _delay_ms(26);
 
   raw = read16(BMP183_REGISTER_PRESSUREDATA);
@@ -254,7 +255,7 @@ float Adafruit_BMP183::getTemperature(void) {
   B5 = X1 + X2;
   temp = (B5+8)/pow(2,4);
   temp /= 10;
-  
+
   return temp;
 }
 
@@ -283,7 +284,7 @@ uint8_t Adafruit_BMP183::SPIxfer(uint8_t x) {
       digitalWrite(_clk, LOW);
       digitalWrite(_mosi, x & (1<<i));
       digitalWrite(_clk, HIGH);
-      if (digitalRead(_miso)) 
+      if (digitalRead(_miso))
 	reply |= 1;
     }
     return reply;
