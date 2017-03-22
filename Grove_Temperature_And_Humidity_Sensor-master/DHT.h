@@ -13,7 +13,8 @@
 #elif (F_CPU >= 15400000UL) && (F_CPU <= 19000000L)
 #define COUNT 6
 #else
-#error "CPU SPEED NOT SUPPORTED"
+//#error "CPU SPEED NOT SUPPORTED"
+#define COUNT 6
 #endif
 
 /* DHT library
