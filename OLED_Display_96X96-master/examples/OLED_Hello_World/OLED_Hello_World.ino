@@ -1,6 +1,6 @@
 #include <Wire.h>
 #include <SeeedGrayOLED.h>
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 
 
 void setup()
@@ -10,7 +10,7 @@ void setup()
   SeeedGrayOled.clearDisplay();     //Clear Display.
   SeeedGrayOled.setNormalDisplay(); //Set Normal Display Mode
   SeeedGrayOled.setVerticalMode();  // Set to vertical mode for displaying text
-  
+
   for(char i=0; i < 12 ; i++)
   {
   SeeedGrayOled.setTextXY(i,0);  //set Cursor to ith line, 0th column
@@ -21,7 +21,7 @@ void setup()
 
 void loop()
 {
-  
+
 }
 
 

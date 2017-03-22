@@ -28,7 +28,7 @@
 
 #include "SeeedGrayOLED.h"
 
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 
 #if defined(__arm__) && !defined(PROGMEM)
   #define PROGMEM
@@ -137,7 +137,7 @@ const unsigned char BasicFont[][8] PROGMEM=
   {0x00,0x00,0x7F,0x00,0x00,0x00,0x00,0x00},
   {0x00,0x41,0x36,0x08,0x00,0x00,0x00,0x00},
   {0x00,0x02,0x01,0x01,0x02,0x01,0x00,0x00},
-  {0x00,0x02,0x05,0x05,0x02,0x00,0x00,0x00} 
+  {0x00,0x02,0x05,0x05,0x02,0x00,0x00,0x00}
 };
 
 void SeeedGrayOLED::init(void)
@@ -176,14 +176,14 @@ void SeeedGrayOLED::init(void)
     delay(100);
 
     // Row Address
-    sendCommand(0x75);    // Set Row Address 
+    sendCommand(0x75);    // Set Row Address
     sendCommand(0x00);    // Start 0
-    sendCommand(0x5f);    // End 95 
+    sendCommand(0x5f);    // End 95
 
 
     // Column Address
-    sendCommand(0x15);    // Set Column Address 
-    sendCommand(0x08);    // Start from 8th Column of driver IC. This is 0th Column for OLED 
+    sendCommand(0x15);    // Set Column Address
+    sendCommand(0x08);    // Start from 8th Column of driver IC. This is 0th Column for OLED
     sendCommand(0x37);    // End at  (8 + 47)th column. Each Column has 2 pixels(segments)
 
     // Init gray level for text. Default:Brightest White
@@ -211,13 +211,13 @@ void SeeedGrayOLED::setHorizontalMode()
     sendCommand(0x42); // horizontal mode
 
     // Row Address
-    sendCommand(0x75);    // Set Row Address 
+    sendCommand(0x75);    // Set Row Address
     sendCommand(0x00);    // Start 0
-    sendCommand(0x5f);    // End 95 
+    sendCommand(0x5f);    // End 95
 
     // Column Address
-    sendCommand(0x15);    // Set Column Address 
-    sendCommand(0x08);    // Start from 8th Column of driver IC. This is 0th Column for OLED 
+    sendCommand(0x15);    // Set Column Address
+    sendCommand(0x08);    // Start from 8th Column of driver IC. This is 0th Column for OLED
     sendCommand(0x37);    // End at  (8 + 47)th column. Each Column has 2 pixels(or segments)
 }
 
@@ -271,16 +271,16 @@ void SeeedGrayOLED::putChar(unsigned char C)
     if(C < 32 || C > 127) //Ignore non-printable ASCII characters. This can be modified for multilingual font.
     {
         C=' '; //Space
-    }   
+    }
 
-    
+
     for(char i=0;i<8;i=i+2)
     {
         for(char j=0;j<8;j++)
         {
             // Character is constructed two pixel at a time using vertical mode from the default 8x8 font
             char c=0x00;
-            char bit1=(pgm_read_byte(&BasicFont[C-32][i]) >> j)  & 0x01;  
+            char bit1=(pgm_read_byte(&BasicFont[C-32][i]) >> j)  & 0x01;
             char bit2=(pgm_read_byte(&BasicFont[C-32][i+1]) >> j) & 0x01;
            // Each bit is changed to a nibble
             c|=(bit1)?grayH:0x00;
@@ -295,7 +295,7 @@ void SeeedGrayOLED::putString(const char *String)
     unsigned char i=0;
     while(String[i])
     {
-        putChar(String[i]);     
+        putChar(String[i]);
         i++;
     }
 }
@@ -348,10 +348,10 @@ void SeeedGrayOLED::drawBitmap(const unsigned char *bitmaparray,int bytes)
     for(int i=0;i<bytes;i++)
     {
 
-    for(int j=0;j<8;j=j+2) 
+    for(int j=0;j<8;j=j+2)
     {
         char c=0x00;
-        char bit1=pgm_read_byte(&bitmaparray[i]) << j  & 0x80;  
+        char bit1=pgm_read_byte(&bitmaparray[i]) << j  & 0x80;
         char bit2=pgm_read_byte(&bitmaparray[i]) << (j+1) & 0x80;
 
         // Each bit is changed to a nibble
@@ -374,15 +374,15 @@ void SeeedGrayOLED::setHorizontalScrollProperties(bool direction,unsigned char s
     /*
 Use the following defines for 'direction' :
 
- Scroll_Left            
- Scroll_Right           
+ Scroll_Left
+ Scroll_Right
 
 Use the following defines for 'scrollSpeed' :
 
- Scroll_2Frames     
+ Scroll_2Frames
  Scroll_3Frames
  Scroll_4Frames
- Scroll_5Frames 
+ Scroll_5Frames
  Scroll_25Frames
  Scroll_64Frames
  Scroll_128Frames
@@ -397,7 +397,7 @@ Use the following defines for 'scrollSpeed' :
     }
     else
     {
-        //Scroll Left  
+        //Scroll Left
         sendCommand(0x26);
     }
     sendCommand(0x00);       //Dummmy byte
