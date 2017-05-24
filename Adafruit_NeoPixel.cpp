@@ -33,6 +33,12 @@
 
 #include "Adafruit_NeoPixel.h"
 
+#if defined(ARDUINO_ARCH_LINKIT_RTOS)
+extern "C" {
+#include "hal_gpt.h"
+}
+#endif
+
 #if defined(NRF52)
 #include "nrf.h"
 
@@ -1201,6 +1207,97 @@ void Adafruit_NeoPixel::show(void) {
 #else
 #error "Sorry, only 48 MHz is supported, please set Tools > CPU Speed to 48 MHz"
 #endif // F_CPU == 48000000
+
+
+// Begin of support for LinkIt RTOS based boards (ex. Linkit 7697) -----
+
+#elif defined(ARDUINO_ARCH_LINKIT_RTOS)
+#if PRODUCT_VERSION == 7697
+// Leverage NRF52 DWT implementation (counter base)
+// use 7697 free run counter speed = bus clock
+// 7697 is running at 192MHz (F_CPU = 192000000L)
+// WS2812B (rev B) timing is 0.4 and 0.8 us
+// WS2811 (400 khz) timing is 0.5 and 1.2
+// ---------- BEGIN Constants for cycle counter implementation ---------
+#define CYCLES_800_T0H  76  // ~0.395 uS
+#define CYCLES_800_T1H  153 // ~0.796 uS
+#define CYCLES_800      240 // ~1.25 uS
+
+#define CYCLES_400_T0H  96  // ~0.50 uS
+#define CYCLES_400_T1H  230 // ~1.197 uS
+#define CYCLES_400      480 // ~2.50 uS
+// ---------- END of Constants for cycle counter implementation --------
+
+  //taskENTER_CRITICAL();
+
+  uint32_t CYCLES_X00     = CYCLES_800;
+  uint32_t CYCLES_X00_T1H = CYCLES_800_T1H;
+  uint32_t CYCLES_X00_T0H = CYCLES_800_T0H;
+
+#ifdef NEO_KHZ400
+  if( !is800KHz )
+  {
+    CYCLES_X00     = CYCLES_400;
+    CYCLES_X00_T1H = CYCLES_400_T1H;
+    CYCLES_X00_T0H = CYCLES_400_T0H;
+  }
+#endif
+
+  while(1) {
+    uint8_t *p = pixels;
+
+    uint32_t cycStart;;
+    uint32_t cyc;
+    uint32_t tcyc = 0;
+
+    hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &cycStart);
+    cyc = cycStart;
+
+    for(uint16_t n=0; n<numBytes; n++) {
+      uint8_t pix = *p++;
+
+      for(uint8_t mask = 0x80; mask; mask >>= 1) {
+        do {
+          hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
+        } while(tcyc - cyc < CYCLES_X00);
+        cyc = tcyc;
+
+        digitalWrite(pin, HIGH);
+
+        if(pix & mask) {
+          do {
+            hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
+          } while(tcyc - cyc < CYCLES_X00_T1H);
+        } else {
+          do {
+            hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
+          } while(tcyc - cyc < CYCLES_X00_T0H);
+        }
+
+        digitalWrite(pin, LOW);
+      }
+    }
+    do {
+      hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
+    } while(tcyc - cyc < CYCLES_X00);
+
+
+    // If total time longer than 25%, resend the whole data.
+    // Since we are likely to be interrupted by SoftDevice
+    hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
+    if ( (tcyc - cycStart) < ( 8*numBytes*((CYCLES_X00*5)/4) ) ) {
+      break;
+    }
+
+    // re-send need 300us delay
+    delayMicroseconds(300);
+  }
+
+  //taskEXIT_CRITICAL();
+
+#else
+#error "not support"
+#endif
 
 // Begin of support for NRF52832 based boards  -------------------------
 
