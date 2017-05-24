@@ -37,6 +37,7 @@
 extern "C" {
 #include "hal_gpt.h"
 }
+#include "arduino_pins.h"
 #endif
 
 #if defined(NRF52)
@@ -1228,6 +1229,15 @@ void Adafruit_NeoPixel::show(void) {
 #define CYCLES_400      480 // ~2.50 uS
 // ---------- END of Constants for cycle counter implementation --------
 
+#define DRV_WriteReg32(addr,data)   ((*(volatile uint32_t *)(addr)) = (uint32_t)(data))
+#define IOT_GPIO_AON_BASE           (0x8300B000)
+#define IOT_GPIO_DOUT1              (0x60)
+#define IOT_GPIO_DOUT1_SET          (IOT_GPIO_DOUT1 + 0x04)
+#define IOT_GPIO_DOUT1_RESET        (IOT_GPIO_DOUT1 + 0x08)
+#define IOT_GPIO_DOUT2              (0x70)
+#define IOT_GPIO_DOUT2_SET          (IOT_GPIO_DOUT2 + 0x04)
+#define IOT_GPIO_DOUT2_RESET        (IOT_GPIO_DOUT2 + 0x08)
+
   //taskENTER_CRITICAL();
 
   uint32_t CYCLES_X00     = CYCLES_800;
@@ -1243,12 +1253,23 @@ void Adafruit_NeoPixel::show(void) {
   }
 #endif
 
+  uint32_t gpio = (uint32_t)get_arduino_pin_desc((arduino_pin)pin)->pin_no;
+  uint32_t reg_set = IOT_GPIO_AON_BASE + IOT_GPIO_DOUT1_SET;
+  uint32_t reg_reset = IOT_GPIO_AON_BASE + IOT_GPIO_DOUT1_RESET;
+  if(gpio >= 32)
+  {
+    reg_set = IOT_GPIO_AON_BASE + IOT_GPIO_DOUT2_SET;
+    reg_reset = IOT_GPIO_AON_BASE + IOT_GPIO_DOUT2_RESET;
+    gpio = gpio % 32;
+  }
+  uint32_t gpioMask = 1<<gpio;
+
   while(1) {
     uint8_t *p = pixels;
 
     uint32_t cycStart;;
     uint32_t cyc;
-    uint32_t tcyc = 0;
+    uint32_t tcyc;
 
     hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &cycStart);
     cyc = cycStart;
@@ -1262,7 +1283,7 @@ void Adafruit_NeoPixel::show(void) {
         } while(tcyc - cyc < CYCLES_X00);
         cyc = tcyc;
 
-        digitalWrite(pin, HIGH);
+        DRV_WriteReg32(reg_set, gpioMask);
 
         if(pix & mask) {
           do {
@@ -1274,7 +1295,7 @@ void Adafruit_NeoPixel::show(void) {
           } while(tcyc - cyc < CYCLES_X00_T0H);
         }
 
-        digitalWrite(pin, LOW);
+        DRV_WriteReg32(reg_reset, gpioMask);
       }
     }
     do {
