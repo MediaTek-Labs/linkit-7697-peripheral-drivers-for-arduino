@@ -1230,6 +1230,8 @@ void Adafruit_NeoPixel::show(void) {
 // ---------- END of Constants for cycle counter implementation --------
 
 #define DRV_WriteReg32(addr,data)   ((*(volatile uint32_t *)(addr)) = (uint32_t)(data))
+#define DRV_Reg32(addr)             (*(volatile uint32_t *)(addr))
+
 #define IOT_GPIO_AON_BASE           (0x8300B000)
 #define IOT_GPIO_DOUT1              (0x60)
 #define IOT_GPIO_DOUT1_SET          (IOT_GPIO_DOUT1 + 0x04)
@@ -1237,6 +1239,9 @@ void Adafruit_NeoPixel::show(void) {
 #define IOT_GPIO_DOUT2              (0x70)
 #define IOT_GPIO_DOUT2_SET          (IOT_GPIO_DOUT2 + 0x04)
 #define IOT_GPIO_DOUT2_RESET        (IOT_GPIO_DOUT2 + 0x08)
+
+#define CM4_GPT_BASE                0x83050000
+#define GPT4_CNT                    (CM4_GPT_BASE+0x68)
 
   //taskENTER_CRITICAL();
 
@@ -1269,8 +1274,9 @@ void Adafruit_NeoPixel::show(void) {
 
     uint32_t cycStart;;
     uint32_t cyc;
-    uint32_t tcyc;
 
+    // Call HAL api once to make sure the bus counter is initialized.
+    // after this, use DRV_Reg32(GPT4_CNT) to retrieve counter directly
     hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &cycStart);
     cyc = cycStart;
 
@@ -1278,35 +1284,26 @@ void Adafruit_NeoPixel::show(void) {
       uint8_t pix = *p++;
 
       for(uint8_t mask = 0x80; mask; mask >>= 1) {
-        do {
-          hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
-        } while(tcyc - cyc < CYCLES_X00);
-        cyc = tcyc;
+        while(DRV_Reg32(GPT4_CNT) - cyc < CYCLES_X00);
+        cyc = DRV_Reg32(GPT4_CNT);
 
         DRV_WriteReg32(reg_set, gpioMask);
 
         if(pix & mask) {
-          do {
-            hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
-          } while(tcyc - cyc < CYCLES_X00_T1H);
+          while(DRV_Reg32(GPT4_CNT) - cyc < CYCLES_X00_T1H);
         } else {
-          do {
-            hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
-          } while(tcyc - cyc < CYCLES_X00_T0H);
+          while(DRV_Reg32(GPT4_CNT) - cyc < CYCLES_X00_T0H);
         }
 
         DRV_WriteReg32(reg_reset, gpioMask);
       }
     }
-    do {
-      hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
-    } while(tcyc - cyc < CYCLES_X00);
+    while(DRV_Reg32(GPT4_CNT) - cyc < CYCLES_X00);
 
 
     // If total time longer than 25%, resend the whole data.
     // Since we are likely to be interrupted by SoftDevice
-    hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &tcyc);
-    if ( (tcyc - cycStart) < ( 8*numBytes*((CYCLES_X00*5)/4) ) ) {
+    if ( (DRV_Reg32(GPT4_CNT) - cycStart) < ( 8*numBytes*((CYCLES_X00*5)/4) ) ) {
       break;
     }
 
