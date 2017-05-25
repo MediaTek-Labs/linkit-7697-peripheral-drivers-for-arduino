@@ -38,6 +38,8 @@ extern "C" {
 #include "hal_gpt.h"
 }
 #include "arduino_pins.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #endif
 
 #if defined(NRF52)
@@ -1243,7 +1245,7 @@ void Adafruit_NeoPixel::show(void) {
 #define CM4_GPT_BASE                0x83050000
 #define GPT4_CNT                    (CM4_GPT_BASE+0x68)
 
-  //taskENTER_CRITICAL();
+  taskENTER_CRITICAL();
 
   uint32_t CYCLES_X00     = CYCLES_800;
   uint32_t CYCLES_X00_T1H = CYCLES_800_T1H;
@@ -1268,6 +1270,10 @@ void Adafruit_NeoPixel::show(void) {
     gpio = gpio % 32;
   }
   uint32_t gpioMask = 1<<gpio;
+  // Call HAL api once to make sure the bus counter is initialized.
+  // after this, use DRV_Reg32(GPT4_CNT) to retrieve counter directly
+  uint32_t foo;
+  hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &foo);
 
   while(1) {
     uint8_t *p = pixels;
@@ -1275,10 +1281,8 @@ void Adafruit_NeoPixel::show(void) {
     uint32_t cycStart;;
     uint32_t cyc;
 
-    // Call HAL api once to make sure the bus counter is initialized.
-    // after this, use DRV_Reg32(GPT4_CNT) to retrieve counter directly
-    hal_gpt_get_free_run_count(HAL_GPT_CLOCK_SOURCE_BUS, &cycStart);
-    cyc = cycStart;
+    cyc = 0;
+    cycStart = DRV_Reg32(GPT4_CNT);
 
     for(uint16_t n=0; n<numBytes; n++) {
       uint8_t pix = *p++;
@@ -1311,7 +1315,7 @@ void Adafruit_NeoPixel::show(void) {
     delayMicroseconds(300);
   }
 
-  //taskEXIT_CRITICAL();
+  taskEXIT_CRITICAL();
 
 #else
 #error "not support"
