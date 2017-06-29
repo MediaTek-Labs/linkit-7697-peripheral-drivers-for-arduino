@@ -7,3 +7,7 @@ If you are looking for driver for **Grove Starter Kit for LinkIt 7697**, please 
 ## How to use
 
 Please clone or download the repo. Each folder in the repo is a Arduino library. Copy the driver folders you need to your **Arduino library folder**. You can refer to the instructions [here](https://www.arduino.cc/en/Guide/Libraries#toc5).
+
+## Contributing
+
+Feel free to submit a pull request to add new driver library to this repo. Since this repo is a collection of driver from other sources, it is important to keep the original commit logs. Please try preserving the file modification history. For example, use [git subtree](https://www.atlassian.com/blog/git/alternatives-to-git-submodule-git-subtree)  instead of simply copy and re-adding the files to this repo.
