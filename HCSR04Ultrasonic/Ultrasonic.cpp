@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Ultrasonic.h>
-
+#include <stdarg.h>
 
 Ultrasonic::Ultrasonic(int tp, int ep)
     {
