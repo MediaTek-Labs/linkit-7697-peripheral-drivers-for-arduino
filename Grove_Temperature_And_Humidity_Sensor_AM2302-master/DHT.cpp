@@ -1,4 +1,4 @@
-/* DHT library 
+/* DHT library
 
 MIT license
 written by Adafruit Industries
@@ -31,7 +31,7 @@ float DHT::readTemperature(bool S) {
       f = data[2];
       if(S)
       	f = convertCtoF(f);
-      	
+
       return f;
     case DHT22:
     case DHT21:
@@ -103,7 +103,7 @@ boolean DHT::read(void) {
   _lastreadtime = millis();
 
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
-  
+
   // now pull it low for ~20 milliseconds
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, LOW);
@@ -118,7 +118,7 @@ boolean DHT::read(void) {
     counter = 0;
     while (digitalRead(_pin) == laststate) {
       counter++;
-      delayMicroseconds(1);
+      delayMicroseconds(5);
       if (counter == 255) {
         break;
       }
@@ -139,7 +139,7 @@ boolean DHT::read(void) {
   }
 
   //sei();
-  
+
   /*
   Serial.println(j, DEC);
   Serial.print(data[0], HEX); Serial.print(", ");
@@ -151,11 +151,11 @@ boolean DHT::read(void) {
   */
 
   // check we read 40 bits and that the checksum matches
-  if ((j >= 40) && 
+  if ((j >= 40) &&
       (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) ) {
     return true;
   }
-  
+
 
   return false;
 
