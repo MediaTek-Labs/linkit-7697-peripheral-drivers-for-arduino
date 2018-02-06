@@ -18,6 +18,11 @@ int  IRrecv::decode (decode_results *results)
 
 	results->overflow = irparams.overflow;
 
+#ifdef __MTK_MT7697__
+    // force a context switch for the ir_rx_task() to start execution
+    delay(0);
+#endif
+
 	if (irparams.rcvstate != STATE_STOP)  return false ;
 
 #if DECODE_NEC
@@ -115,7 +120,52 @@ IRrecv::IRrecv (int recvpin, int blinkpin)
 	irparams.blinkflag = 0;
 }
 
+#ifdef __MTK_MT7697__
 
+#define RX_LOOP_INTERVAL    (USECPERTICK)    // in uSec
+TaskHandle_t rx_task_handle = NULL;
+
+static void ir_rx_task(void *args)
+{
+    uint32_t start;
+    uint32_t end;
+    uint32_t duration;
+    int32_t offset;
+
+    offset = 0;
+
+    while (1)
+    {
+        taskDISABLE_INTERRUPTS();
+
+        // begin timestamp
+        start  = micros();
+        // call IRRemote handler
+        rx_handler();
+        // end timestamp
+        end = micros();
+
+        // overflow
+        duration = (end < start)? (0xffffffff - start) + end: end - start;
+
+        duration += offset;
+
+        offset = duration - RX_LOOP_INTERVAL;
+
+        if (offset >= 0)
+        {
+            continue;
+        }
+
+        offset = 0;
+
+        //delayMicroseconds(RX_LOOP_INTERVAL - duration);
+        hal_gpt_delay_us(RX_LOOP_INTERVAL - duration);
+
+        taskENABLE_INTERRUPTS();
+    }
+}
+#endif
 
 //+=============================================================================
 // initialization
@@ -132,6 +182,11 @@ void  IRrecv::enableIRIn ( )
 	// every 50ns, autoreload = true
 	timerAlarmWrite(timer, 50, true);
 	timerAlarmEnable(timer);
+#elif defined(__MTK_MT7697__)
+    if (rx_task_handle == NULL)
+    {
+        xTaskCreate(ir_rx_task, "ir_rx_task", 2048, NULL, 1, &rx_task_handle);
+    }
 #else
 	cli();
 	// Setup pulse clock timer interrupt

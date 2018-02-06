@@ -24,7 +24,7 @@
 #	include "IRremoteInt.h"
 #undef IR_GLOBAL
 
-#ifndef IR_TIMER_USE_ESP32
+#if !defined(IR_TIMER_USE_ESP32) && !defined(__MTK_MT7697__)
 #include <avr/interrupt.h>
 #endif
 
@@ -55,8 +55,11 @@ int  MATCH (int measured,  int desired)
   if (passed)
     DBG_PRINTLN(F("?; passed"));
   else
-    DBG_PRINTLN(F("?; FAILED")); 
- 	return passed;
+  {
+    DBG_PRINTLN(F("?; FAILED"));
+  }
+
+  return passed;
 }
 
 //+========================================================
@@ -68,7 +71,7 @@ int  MATCH_MARK (int measured_ticks,  int desired_us)
 	DBG_PRINT(measured_ticks * USECPERTICK, DEC);
 	DBG_PRINT(F("us vs "));
 	DBG_PRINT(desired_us, DEC);
-	DBG_PRINT("us"); 
+	DBG_PRINT("us");
 	DBG_PRINT(": ");
 	DBG_PRINT(TICKS_LOW(desired_us + MARK_EXCESS) * USECPERTICK, DEC);
 	DBG_PRINT(F(" <= "));
@@ -81,8 +84,11 @@ int  MATCH_MARK (int measured_ticks,  int desired_us)
   if (passed)
     DBG_PRINTLN(F("?; passed"));
   else
-    DBG_PRINTLN(F("?; FAILED")); 
- 	return passed;
+  {
+    DBG_PRINTLN(F("?; FAILED"));
+  }
+
+  return passed;
 }
 
 //+========================================================
@@ -94,7 +100,7 @@ int  MATCH_SPACE (int measured_ticks,  int desired_us)
 	DBG_PRINT(measured_ticks * USECPERTICK, DEC);
 	DBG_PRINT(F("us vs "));
 	DBG_PRINT(desired_us, DEC);
-	DBG_PRINT("us"); 
+	DBG_PRINT("us");
 	DBG_PRINT(": ");
 	DBG_PRINT(TICKS_LOW(desired_us - MARK_EXCESS) * USECPERTICK, DEC);
 	DBG_PRINT(F(" <= "));
@@ -107,8 +113,11 @@ int  MATCH_SPACE (int measured_ticks,  int desired_us)
   if (passed)
     DBG_PRINTLN(F("?; passed"));
   else
-    DBG_PRINTLN(F("?; FAILED")); 
- 	return passed;
+  {
+    DBG_PRINTLN(F("?; FAILED"));
+  }
+
+  return passed;
 }
 
 //+=============================================================================
@@ -125,6 +134,8 @@ int  MATCH_SPACE (int measured_ticks,  int desired_us)
 //
 #ifdef IR_TIMER_USE_ESP32
 void IRTimer()
+#elif defined(__MTK_MT7697__)
+void rx_handler()
 #else
 ISR (TIMER_INTR_NAME)
 #endif

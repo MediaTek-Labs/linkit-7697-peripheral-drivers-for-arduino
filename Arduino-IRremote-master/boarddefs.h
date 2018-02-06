@@ -22,6 +22,16 @@
 #ifndef boarddefs_h
 #define boarddefs_h
 
+#if defined(ARDUINO_ARCH_LINKIT_RTOS)
+#define __MTK_MT7697__
+#endif
+
+#ifdef __MTK_MT7697__
+#include "hal_gpt.h"
+#include <FreeRTOS.h>
+#include <task.h>
+#endif
+
 //------------------------------------------------------------------------------
 // Defines for blinking the LED
 //
@@ -46,6 +56,12 @@
 #	define BLINKLED        255
 #	define BLINKLED_ON()   1
 #	define BLINKLED_OFF()  1
+
+#elif defined(__MTK_MT7697__)
+#   define BLINKLED        LED_BUILTIN
+#   define BLINKLED_ON()   (digitalWrite(BLINKLED, HIGH))
+#   define BLINKLED_OFF()  (digitalWrite(BLINKLED, LOW))
+
 #else
 #	define BLINKLED        13
 #	define BLINKLED_ON()  (PORTB |= B00100000)
@@ -123,7 +139,7 @@
 || defined(__AVR_ATmega164P__)
 	//#define IR_USE_TIMER1   // tx = pin 13
 	#define IR_USE_TIMER2     // tx = pin 14
-	
+
 //MegaCore - ATmega64, ATmega128
 #elif defined(__AVR_ATmega64__) || defined(__AVR_ATmega128__)
  	#define IR_USE_TIMER1     // tx = pin 13
@@ -146,6 +162,8 @@
 
 #elif defined(ESP32)
 	#define IR_TIMER_USE_ESP32
+#elif defined(__MTK_MT7697__)
+    #define IR_USE_CUSTOM     // use pin 3 to follow Uno (ATmega328)
 #else
 // Arduino Duemilanove, Diecimila, LilyPad, Mini, Fio, Nano, etc
 // ATmega48, ATmega88, ATmega168, ATmega328
@@ -210,6 +228,23 @@
 #else
 #	define TIMER_PWM_PIN  3              // Arduino Duemilanove, Diecimila, LilyPad, etc
 #endif					     // ATmega48, ATmega88, ATmega168, ATmega328
+
+//---------------------------------------------------------
+// LinkIt 7697
+//
+#elif defined(IR_USE_CUSTOM)
+#define TIMER_PWM_PIN  3    // Uno P3 == MT7697 HAL_PWM_22 (HAL_GPIO_39)
+
+#define TIMER_RESET
+#define TIMER_ENABLE_PWM
+#define TIMER_DISABLE_PWM
+#define TIMER_ENABLE_INTR
+#define TIMER_DISABLE_INTR
+
+#define PWM_DUTY_CYCLE  (333)
+
+extern void rx_handler();
+extern TaskHandle_t rx_task_handle;
 
 //---------------------------------------------------------
 // Timer1 (16 bits)
@@ -313,7 +348,7 @@
 
 #define TIMER_RESET
 
-#if defined(ARDUINO_AVR_PROMICRO) // Sparkfun Pro Micro                         
+#if defined(ARDUINO_AVR_PROMICRO) // Sparkfun Pro Micro
 	#define TIMER_ENABLE_PWM    (TCCR4A |= _BV(COM4A0))     // Use complimentary O̅C̅4̅A̅ output on pin 5
 	#define TIMER_DISABLE_PWM   (TCCR4A &= ~(_BV(COM4A0)))  // (Pro Micro does not map PC7 (32/ICP3/CLK0/OC4A)
 															// of ATmega32U4 )
@@ -578,12 +613,12 @@
 // way to do this on ESP32 is using the RMT built in driver like in this incomplete library below
 // https://github.com/ExploreEmbedded/ESP32_RMT
 #elif defined(IR_TIMER_USE_ESP32)
-#define TIMER_RESET	     
-#define TIMER_ENABLE_PWM     
+#define TIMER_RESET
+#define TIMER_ENABLE_PWM
 #define TIMER_DISABLE_PWM   Serial.println("IRsend not implemented for ESP32 yet");
-#define TIMER_ENABLE_INTR    
-#define TIMER_DISABLE_INTR   
-#define TIMER_INTR_NAME      
+#define TIMER_ENABLE_INTR
+#define TIMER_DISABLE_INTR
+#define TIMER_INTR_NAME
 
 //---------------------------------------------------------
 // Unknown Timer

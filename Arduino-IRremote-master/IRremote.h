@@ -339,6 +339,11 @@ class IRsend
 #		if SEND_LEGO_PF
 			void  sendLegoPowerFunctions (uint16_t data, bool repeat = true) ;
 #		endif
+
+#ifdef __MTK_MT7697__
+    private:
+        unsigned int m_khz;
+#endif
 } ;
 
 #endif
