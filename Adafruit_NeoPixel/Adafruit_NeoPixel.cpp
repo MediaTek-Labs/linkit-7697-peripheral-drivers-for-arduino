@@ -37,7 +37,7 @@
 extern "C" {
 #include "hal_gpt.h"
 }
-#include "arduino_pins.h"
+#include "pins_arduino.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #endif
