@@ -1,0 +1,7 @@
+This is an Arduino library for the SHT21 / SHT25 humidity and temperature sensors. 
+
+Pick one up at http://www.misenso.com/product_p/002.htm
+
+To download. click the DOWNLOADS button in the top right corner, rename the uncompressed folder SHT2x. Check that the SHT2x folder contains SHT2x.cpp and SHT2x.h
+
+Place the SHT2x library folder your <arduinosketchfolder>/libraries/ folder. You may need to create the libraries subfolder if its your first library. Restart the IDE.
