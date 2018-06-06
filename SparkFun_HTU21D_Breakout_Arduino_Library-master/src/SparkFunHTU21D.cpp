@@ -43,7 +43,7 @@ void HTU21D::begin(TwoWire &wirePort)
 }
 
 #define MAX_WAIT 100
-#define DELAY_INTERVAL 10
+#define DELAY_INTERVAL 20
 #define MAX_COUNTER (MAX_WAIT/DELAY_INTERVAL)
 
 //Given a command, reads a given 2-byte value with CRC from the HTU21D
