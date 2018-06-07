@@ -114,8 +114,10 @@ public:
 	byte error_code;				// Initial State
 	double gains[3];				// Counts to Gs
 	
+	// This initializes I2C connection to ADXL345
+	// Note: SPI is not supported in this branch of library.
 	ADXL345();
-	ADXL345(int CS);
+	
 	void powerOn();
 	void readAccel(int* xyx);
 	void readAccel(int* x, int* y, int* z);

@@ -37,21 +37,6 @@ ADXL345::ADXL345() {
 	I2C = true;
 }
 
-ADXL345::ADXL345(int CS) {
-	status = ADXL345_OK;
-	error_code = ADXL345_NO_ERROR;
-	
-	gains[0] = 0.00376390;
-	gains[1] = 0.00376009;
-	gains[2] = 0.00349265;
-	_CS = CS;
-	I2C = false;
-	SPI.begin();
-	SPI.setDataMode(SPI_MODE3);
-	pinMode(_CS, OUTPUT);
-	digitalWrite(_CS, HIGH);
-}
-
 void ADXL345::powerOn() {
 	if(I2C) {
 		Wire.begin();				// If in I2C Mode Only
