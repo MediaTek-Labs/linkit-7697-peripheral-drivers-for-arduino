@@ -45,6 +45,17 @@ void loop()
     const float heading = mpu.getDegreeToMagNorth();
     Serial.print("heading:");
     Serial.println(heading);
+
+
+    const double pitch = mpu.getPitch();
+    const double roll = mpu.getRoll();
+    const double yaw = mpu.getYaw();
+    Serial.print("pitch:");
+    Serial.println(pitch);
+    Serial.print("roll:");
+    Serial.println(roll);
+    Serial.print("yaw:");
+    Serial.println(yaw);
     
     delay(1000);
 }

@@ -120,3 +120,29 @@ double MPU9250Block::getDegreeToMagNorth()
 
     return tiltheading;
 }
+
+double MPU9250Block::getPitch()
+{
+    int16_t x = 0;
+    int16_t y = 0;
+    int16_t z = 0;
+    accelgyro.getAcceleration(&x, &y, &z);
+    const int pitch = (atan2(x, sqrt(y * y + z * z)) * 180.0) / PI;
+    return pitch;
+}
+
+double MPU9250Block::getRoll()
+{
+    int16_t x = 0;
+    int16_t y = 0;
+    int16_t z = 0;
+    accelgyro.getAcceleration(&x, &y, &z);
+
+    const int roll = (atan2(y, z) * 180.0) / PI;
+    return roll;
+}
+
+double MPU9250Block::getYaw()
+{
+    return getDegreeToMagNorth();
+}

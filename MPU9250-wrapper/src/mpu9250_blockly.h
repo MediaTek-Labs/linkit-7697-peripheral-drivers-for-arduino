@@ -29,6 +29,12 @@ class MPU9250Block
 
     double getMagZ();
 
+    double getPitch();
+
+    double getRoll();
+
+    double getYaw();
+
     double getDegreeToMagNorth();
 
   protected:
