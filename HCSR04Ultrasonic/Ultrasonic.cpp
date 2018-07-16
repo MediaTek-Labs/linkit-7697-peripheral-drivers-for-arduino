@@ -48,13 +48,26 @@ Ultrasonic::Ultrasonic(int tp, int ep)
     _inDivisor = 70.1633;
     }
 
+Ultrasonic::Ultrasonic(int pin)
+    {
+    pinMode(pin, OUTPUT);
+    _trigPin = pin;
+    _echoPin = pin;
+    _cmDivisor = 27.6233;
+    _inDivisor = 70.1633;
+    }
+
 long Ultrasonic::timing()
     {
+    pinMode(_trigPin, OUTPUT);
     digitalWrite(_trigPin, LOW);
     delayMicroseconds(2);
     digitalWrite(_trigPin, HIGH);
-    delayMicroseconds(10);
+    // delayMicroseconds(10);
+    delayMicroseconds(5);
     digitalWrite(_trigPin, LOW);
+
+    pinMode(_echoPin, INPUT);
     return pulseIn(_echoPin, HIGH);
     }
 
@@ -70,6 +83,16 @@ void Ultrasonic::setDivisor(float value, int metric)
     {
     if(metric) _cmDivisor = value;
     else _inDivisor = value;
+    }
+
+long Ultrasonic::MeasureInCentimeters(void)
+    {
+    return convert(timing(), Ultrasonic::CM);
+    }
+
+long Ultrasonic::MeasureInInches(void)
+    {
+    return convert(timing(), Ultrasonic::IN);
     }
 
 #ifdef COMPILE_STD_DEV

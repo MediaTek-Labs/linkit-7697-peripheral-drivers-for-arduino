@@ -43,12 +43,23 @@ typedef struct bufferCtl
 class Ultrasonic
     {
     public:
+
+    // for common HC-SR04 module,
+    // which have separate trigger pin and echo pin.
     Ultrasonic(int tp, int ep);
+    
+    // for Seeed Grove Ultrasonic Ranger,
+    // which uses same pin for trigger and echo.
+    Ultrasonic(int pin);
+    
     long timing();
     float convert(long microsec, int metric);
     void setDivisor(float value, int metric);
     static const int IN = 0;
     static const int CM = 1;
+
+    long MeasureInCentimeters(void);
+    long MeasureInInches(void);
 
 #ifdef COMPILE_STD_DEV
     bool sampleCreate(size_t size, ...);
