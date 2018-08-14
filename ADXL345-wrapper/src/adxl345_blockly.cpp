@@ -63,7 +63,7 @@ float ADXL345Block::getRoll()
 {
     int accXYZ[3] = {0};
     _adxl.readAccel(accXYZ);
-    const int adxl_roll = (atan2(accXYZ[1], accXYZ[2]) * 180.0) / PI;
+    const int adxl_roll = (atan2(accXYZ[1], (sqrt(accXYZ[0] * accXYZ[0] + accXYZ[1] * accXYZ[1]))) * 180.0) / PI;
     return adxl_roll;
 }
 
